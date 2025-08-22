@@ -1,78 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Click the Target</title>
-<style>
-body {
-margin: 0;
-padding: 0;
-background: black;
-color: white;
-font-family: Arial, sans-serif;
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-height: 100vh;
-overflow: hidden;
-}
-h1 {
-font-size: 2em;
-margin-bottom: 10px;
-}
-#target {
-width: 50px;
-height: 50px;
-background: red;
-border-radius: 50%;
-position: absolute;
-cursor: pointer;
-transition: top 0.3s, left 0.3s;
-}
-#gameOver {
-font-size: 1.5em;
-font-weight: bold;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Click the Target</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: white;
+      color: orange;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      overflow: hidden;
+    }
+    h1 {
+      font-size: 2em;
+      margin: 20px 0 10px 0;
+      text-align: center;
+      color: orange;
+    }
+    #target {
+      width: 10vmin;
+      height: 10vmin;
+      background: url('sign.png') no-repeat center center;
+      background-size: contain;
+      position: absolute;
+      cursor: pointer;
+      transition: top 0.3s, left 0.3s;
+    }
+    #timer, #score {
+      font-size: 1.2em;
+      margin: 5px;
+      text-align: center;
+      color: orange;
+    }
+    #gameOver {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin-top: 20px;
+      text-align: center;
+      color: orange;
+    }
+    #restartBtn {
+      display: none;
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 1em;
+      background: orange;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #restartBtn:hover {
+      background: darkorange;
+    }
+  </style>
 </head>
 <body>
-<h1>🎯 Click the Target!</h1>
-<p id="timer">Time Left: 30s</p>
-<p id="score">Score: 0</p>
-<div id="target"></div>
-<div id="gameOver" style="display:none;"></div>
+  <h1>🎯 Click the Target!</h1>
+  <p id="timer">Time Left: 30s</p>
+  <p id="score">Score: 0</p>
+  <div id="target"></div>
+  <div id="gameOver" style="display:none;"></div>
+  <button id="restartBtn">Restart Game</button>
 
+  <script>
+    let score = 0;
+    let timeLeft = 30;
+    let gameOver = false;
+    let countdown;
 
-<script>
-let score = 0;
-let timeLeft = 30;
-let gameOver = false;
-const target = document.getElementById("target");
-const scoreEl = document.getElementById("score");
-const timerEl = document.getElementById("timer");
-const gameOverEl = document.getElementById("gameOver");
+    const target = document.getElementById("target");
+    const scoreEl = document.getElementById("score");
+    const timerEl = document.getElementById("timer");
+    const gameOverEl = document.getElementById("gameOver");
+    const restartBtn = document.getElementById("restartBtn");
 
+    function moveTarget() {
+      const top = Math.random() * (window.innerHeight - target.offsetHeight);
+      const left = Math.random() * (window.innerWidth - target.offsetWidth);
+      target.style.top = top + "px";
+      target.style.left = left + "px";
+    }
 
-function moveTarget() {
-const top = Math.random() * 90;
-const left = Math.random() * 90;
-target.style.top = top + "%";
-target.style.left = left + "%";
-}
+    function startGame() {
+      score = 0;
+      timeLeft = 30;
+      gameOver = false;
+      scoreEl.textContent = "Score: 0";
+      timerEl.textContent = "Time Left: 30s";
+      gameOverEl.style.display = "none";
+      target.style.display = "block";
+      restartBtn.style.display = "none";
+      moveTarget();
 
+      countdown = setInterval(() => {
+        if (timeLeft <= 0) {
+          clearInterval(countdown);
+          gameOver = true;
+          target.style.display = "none";
+          gameOverEl.style.display = "block";
+          gameOverEl.textContent = "Game Over! Final Score: " + score;
+          restartBtn.style.display = "inline-block";
+        } else {
+          timeLeft--;
+          timerEl.textContent = "Time Left: " + timeLeft + "s";
+        }
+      }, 1000);
+    }
 
-target.addEventListener("click", () => {
-if (gameOver) return;
-score++;
-scoreEl.textContent = "Score: " + score;
-moveTarget();
-});
+    target.addEventListener("click", () => {
+      if (gameOver) return;
+      score++;
+      scoreEl.textContent = "Score: " + score;
+      moveTarget();
+    });
 
+    restartBtn.addEventListener("click", () => {
+      clearInterval(countdown);
+      startGame();
+    });
 
-const countdown = setInterval(() => {
-if (timeLeft <= 0) {
-clearInterval(countdown);
-gameOver = true;
+    window.addEventListener("resize", () => {
+      if (!gameOver) moveTarget();
+    });
+
+    // Start first game automatically
+    startGame();
+  </script>
+</body>
 </html>
