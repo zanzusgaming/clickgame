@@ -1,138 +1,217 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Click the Target</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catch the Orange</title>
   <style>
-    body {
+    body, html {
       margin: 0;
       padding: 0;
-      background: white;
-      color: orange;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
+      height: 100%;
+      font-family: 'Arial Black', sans-serif;
+      overflow: hidden;
+      text-align: center;
+      color: white;
+    }
+
+    .screen {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('orangebg.jpg') no-repeat center center/cover;
       align-items: center;
-      justify-content: flex-start;
-      height: 100vh;
+      justify-content: center;
+      flex-direction: column;
+      animation: fadeIn 0.8s ease;
+    }
+    .active { display: flex; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Title (plain white text) */
+    h1 {
+      font-size: 5rem;
+      margin: 10px;
+      color: white;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
+    }
+
+    .description {
+      font-size: 1.4rem;
+      max-width: 600px;
+      margin: 15px;
+      line-height: 1.6;
+      text-shadow: 1px 1px 6px black;
+    }
+
+    .btn {
+      padding: 18px 45px;
+      margin: 20px;
+      border: none;
+      border-radius: 20px;
+      font-size: 1.5rem;
+      background: linear-gradient(135deg, #ff9800, #ff5722);
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(255, 152, 0, 0.8);
+      transition: all 0.3s ease;
+    }
+    .btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 30px rgba(255, 152, 0, 1);
+    }
+
+    #gameArea {
+      position: relative;
+      width: 100%;
+      height: 100%;
       overflow: hidden;
     }
-    h1 {
-      font-size: 2em;
-      margin: 20px 0 10px 0;
-      text-align: center;
-      color: orange;
-    }
+
+    /* Target styled as an orange */
     #target {
-      width: 10vmin;
-      height: 10vmin;
-      background: url('sign.png') no-repeat center center;
-      background-size: contain;
       position: absolute;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ffb84d, #ff6600);
+      border: 3px solid #fff;
       cursor: pointer;
-      transition: top 0.3s, left 0.3s;
+      transition: transform 0.2s ease;
     }
-    #timer, #score {
-      font-size: 1.2em;
-      margin: 5px;
-      text-align: center;
-      color: orange;
+    #target:hover { transform: scale(1.1); }
+
+    #score, #timer, #highScore {
+      position: absolute;
+      top: 15px;
+      padding: 8px 15px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(6px);
+      font-size: 1.4rem;
+      color: #fff;
+      box-shadow: 0 0 8px rgba(0,0,0,0.5);
     }
-    #gameOver {
-      font-size: 1.5em;
-      font-weight: bold;
-      margin-top: 20px;
-      text-align: center;
-      color: orange;
-    }
-    #restartBtn {
-      display: none;
-      margin-top: 15px;
-      padding: 10px 20px;
-      font-size: 1em;
-      background: orange;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    #restartBtn:hover {
-      background: darkorange;
+    #score { left: 15px; }
+    #timer { right: 15px; }
+    #highScore { left: 50%; transform: translateX(-50%); }
+
+    #musicBtn {
+      position: absolute;
+      bottom: 15px;
+      right: 15px;
+      z-index: 999;
+      font-size: 1.5rem;
     }
   </style>
 </head>
 <body>
-  <h1>🎯 Click the Target!</h1>
-  <p id="timer">Time Left: 30s</p>
-  <p id="score">Score: 0</p>
-  <div id="target"></div>
-  <div id="gameOver" style="display:none;"></div>
-  <button id="restartBtn">Restart Game</button>
+  <!-- Start Screen -->
+  <div id="startScreen" class="screen active">
+    <h1>Catch the Orange</h1>
+    <p class="description">
+      Welcome to <b>Catch the Orange</b>! 🍊  
+      Test your reflexes and speed by catching the bouncing orange before the timer runs out.  
+      Can you beat the high score?
+    </p>
+    <p id="menuHighScore">Best Score: 0</p>
+    <button id="playButton" class="btn" onclick="startGame()">▶ Play</button>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="gameScreen" class="screen">
+    <div id="gameArea">
+      <div id="target"></div> <!-- Replaced sign.png with styled div -->
+      <div id="score">Score: 0</div>
+      <div id="highScore">High Score: 0</div>
+      <div id="timer">Time: 30</div>
+    </div>
+  </div>
+
+  <!-- Game Over Screen -->
+  <div id="gameOverScreen" class="screen">
+    <h1>Game Over</h1>
+    <p id="finalScore">Your Score: 0</p>
+    <p id="finalHighScore">High Score: 0</p>
+    <button class="btn" onclick="restartGame()">Restart</button>
+    <button class="btn" onclick="backToMenu()">Back to Menu</button>
+  </div>
+
+  <audio id="clickSound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
+  <audio id="bgMusic" src="https://www.bensound.com/bensound-music/bensound-epic.mp3" loop></audio>
+  <button id="musicBtn" class="btn" onclick="toggleMusic()">🎵</button>
 
   <script>
-    let score = 0;
-    let timeLeft = 30;
-    let gameOver = false;
-    let countdown;
+    let score = 0, highScore = 0, timeLeft = 30, gameInterval, timerInterval;
+    let moveSpeed = 1000; // target moves every 1 second
 
-    const target = document.getElementById("target");
-    const scoreEl = document.getElementById("score");
-    const timerEl = document.getElementById("timer");
-    const gameOverEl = document.getElementById("gameOver");
-    const restartBtn = document.getElementById("restartBtn");
+    const target = document.getElementById('target');
+    const scoreDisplay = document.getElementById('score');
+    const timerDisplay = document.getElementById('timer');
+    const highScoreDisplay = document.getElementById('highScore');
+    const clickSound = document.getElementById('clickSound');
+    const bgMusic = document.getElementById('bgMusic');
 
-    function moveTarget() {
-      const top = Math.random() * (window.innerHeight - target.offsetHeight);
-      const left = Math.random() * (window.innerWidth - target.offsetWidth);
-      target.style.top = top + "px";
-      target.style.left = left + "px";
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
     }
 
     function startGame() {
       score = 0;
       timeLeft = 30;
-      gameOver = false;
-      scoreEl.textContent = "Score: 0";
-      timerEl.textContent = "Time Left: 30s";
-      gameOverEl.style.display = "none";
-      target.style.display = "block";
-      restartBtn.style.display = "none";
+      scoreDisplay.textContent = 'Score: ' + score;
+      highScoreDisplay.textContent = 'High Score: ' + highScore;
+      timerDisplay.textContent = 'Time: ' + timeLeft;
       moveTarget();
-
-      countdown = setInterval(() => {
-        if (timeLeft <= 0) {
-          clearInterval(countdown);
-          gameOver = true;
-          target.style.display = "none";
-          gameOverEl.style.display = "block";
-          gameOverEl.textContent = "Game Over! Final Score: " + score;
-          restartBtn.style.display = "inline-block";
-        } else {
-          timeLeft--;
-          timerEl.textContent = "Time Left: " + timeLeft + "s";
-        }
-      }, 1000);
+      gameInterval = setInterval(moveTarget, moveSpeed);
+      timerInterval = setInterval(updateTimer, 1000);
+      showScreen('gameScreen');
+      bgMusic.play();
     }
 
-    target.addEventListener("click", () => {
-      if (gameOver) return;
+    function moveTarget() {
+      const x = Math.random() * (window.innerWidth - target.clientWidth);
+      const y = Math.random() * (window.innerHeight - target.clientHeight);
+      target.style.left = x + 'px';
+      target.style.top = y + 'px';
+    }
+
+    target.addEventListener('click', () => {
       score++;
-      scoreEl.textContent = "Score: " + score;
-      moveTarget();
+      scoreDisplay.textContent = 'Score: ' + score;
+      clickSound.play();
     });
 
-    restartBtn.addEventListener("click", () => {
-      clearInterval(countdown);
-      startGame();
-    });
+    function updateTimer() {
+      timeLeft--;
+      timerDisplay.textContent = 'Time: ' + timeLeft;
+      if (timeLeft <= 0) endGame();
+    }
 
-    window.addEventListener("resize", () => {
-      if (!gameOver) moveTarget();
-    });
+    function endGame() {
+      clearInterval(gameInterval);
+      clearInterval(timerInterval);
+      if (score > highScore) highScore = score;
+      document.getElementById('finalScore').textContent = 'Your Score: ' + score;
+      document.getElementById('finalHighScore').textContent = 'High Score: ' + highScore;
+      document.getElementById('menuHighScore').textContent = 'Best Score: ' + highScore;
+      showScreen('gameOverScreen');
+    }
 
-    // Start first game automatically
-    startGame();
+    function restartGame() { startGame(); }
+    function backToMenu() { showScreen('startScreen'); }
+
+    function toggleMusic() {
+      if (bgMusic.paused) bgMusic.play(); else bgMusic.pause();
+    }
   </script>
 </body>
 </html>
